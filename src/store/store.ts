@@ -5,6 +5,7 @@ export type ApplyFn<T> = (state: T) => T;
 export function createStore<T>(initialState: T) {
     let state: T = initialState;
     let subscribers: SubscribeFn<T>[] = [];
+    let applying = false;
     return {
         get(): Readonly<T> {
             return state;
@@ -21,8 +22,11 @@ export function createStore<T>(initialState: T) {
             };
         },
         apply(fn: ApplyFn<T>) {
+            console.assert(!applying, "cannot call store.apply() within another call");
+            applying = true;
             state = fn(state);
             subscribers.forEach(fn => fn(state));
+            applying = false;
         }
     }
 }
